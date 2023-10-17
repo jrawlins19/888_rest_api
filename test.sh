@@ -1,3 +1,3 @@
 #!/bin/bash -e
 
-pipenv run pytest -s -v
+pipenv run pytest --cov=src -s -v
