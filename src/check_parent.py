@@ -1,4 +1,4 @@
-from db import run_query, build_update_query
+from src.db import run_query, build_update_query
 
 
 # Runs an SQL query to get active child objects (Sports -> Events, Events -> Selections)

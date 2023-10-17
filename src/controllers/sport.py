@@ -1,6 +1,6 @@
 from flask import request
 from slugify import slugify
-import db
+from src.db import *
 from src.app import app
 
 
@@ -16,9 +16,9 @@ def fetch_sports():
             # if no filters in the query params, set filters to None
             filters = None
         # build the query
-        query = db.build_select_query('sports', filters)
+        query = build_select_query('sports', filters)
         # run the query and return the items fetched from the DB
-        items = db.run_query(query)
+        items = run_query(query)
         # return items
         return items, 200
     except Exception as e:
@@ -38,8 +38,8 @@ def create_sports():
             values.append((item['name'], slug, item['active']))
 
         # run the insert query
-        with db.con:
-            db.con.executemany("INSERT INTO sports ('name', 'slug', 'active') VALUES(?, ?, ?)", values)
+        with con:
+            con.executemany("INSERT INTO sports ('name', 'slug', 'active') VALUES(?, ?, ?)", values)
 
         return "", 200
     except Exception as e:
@@ -58,10 +58,10 @@ def update_sport():
             return "Missing updates object", 400
 
         # build the update query using the filters and values
-        query = db.build_update_query('sports', body['values'], body['filters'])
+        query = build_update_query('sports', body['values'], body['filters'])
 
         # run the query, returning the updated rows
-        items = db.run_query(query)
+        items = run_query(query)
 
         return items, 200
     except Exception as e:
@@ -73,9 +73,9 @@ def fetch_single_sport(sport_id: int):
     try:
         # get the event using the id provided in the url
         filters = [{'label': 'id', 'type': '=', 'value': sport_id}]
-        query = db.build_select_query('sports', filters)
+        query = build_select_query('sports', filters)
         # run the query and return the items fetched from the DB
-        items = db.run_query(query)
+        items = run_query(query)
         return items, 200
     except Exception as e:
         return "Could not get sports: " + str(e), 500
@@ -91,10 +91,10 @@ def update_sports(sport_id: int):
             return "Missing updates object", 400
 
         # build the update query using the values and the event id from the url
-        query = db.build_update_query('sports', body['values'], ["id == {0}".format(sport_id)])
+        query = build_update_query('sports', body['values'], ["id == {0}".format(sport_id)])
 
         # run the query and return the items fetched from the DB
-        items = db.run_query(query)
+        items = run_query(query)
 
         return items, 200
     except Exception as e:

@@ -1,5 +1,5 @@
 from flask import request
-import db
+from src.db import *
 from src.app import app
 from src.check_parent import check_parent_active
 
@@ -16,9 +16,9 @@ def fetch_all_selections():
             # if no filters in the query params, set filters to None
             filters = None
         # build the query
-        query = db.build_select_query('selections', filters)
+        query = build_select_query('selections', filters)
         # run the query and return the items fetched from the DB
-        items = db.run_query(query)
+        items = run_query(query)
         # return items
         return items, 200
     except Exception as e:
@@ -37,8 +37,8 @@ def create_selections():
             values.append((item['name'], item['event'], item['price'], item['active'], item['outcome']))
 
         # run the insert query
-        with db.con:
-            db.con.executemany("""
+        with con:
+            con.executemany("""
                 INSERT INTO selections ('name', 'event', 'price', 'active', 'outcome') VALUES(?, ?, ?, ?, ?)
             """, values)
 
@@ -59,10 +59,10 @@ def update_selection():
             return "Missing updates object", 400
 
         # build the update query using the filters and values
-        query = db.build_update_query('selections', body['values'], body['filters'])
+        query = build_update_query('selections', body['values'], body['filters'])
 
         # run the query, returning the updated rows
-        items = db.run_query(query)
+        items = run_query(query)
 
         # if we updated the active status, then we need to check whether the parent (sports) also needs to be made
         # inactive/active
@@ -80,9 +80,9 @@ def fetch_single_selection(selection_id: int):
     try:
         # get the event using the id provided in the url
         filters = [{'label': 'id', 'type': '=', 'value': selection_id}]
-        query = db.build_select_query('selections', filters)
+        query = build_select_query('selections', filters)
         # run the query and return the items fetched from the DB
-        items = db.run_query(query)
+        items = run_query(query)
         return items, 200
     except Exception as e:
         return "Could not get selections: " + str(e), 500
@@ -98,10 +98,10 @@ def update_selections(selection_id: int):
             return "Missing updates object", 400
 
         # build the update query using the values and the event id from the url
-        query = db.build_update_query('selections', body['values'], ["id == {0}".format(selection_id)])
+        query = build_update_query('selections', body['values'], ["id == {0}".format(selection_id)])
 
         # run the query and return the items fetched from the DB
-        items = db.run_query(query)
+        items = run_query(query)
 
         # if we updated the active status, then we need to check whether the parent (sports) also needs to be made
         # inactive/active
