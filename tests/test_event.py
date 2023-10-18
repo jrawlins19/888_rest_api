@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timezone
 from app import app
 
 app.testing = True
@@ -196,3 +197,41 @@ def test_update_event_parent_active():
     response = app.test_client().get("/sport/2")
     parent_event = response.json[0]
     assert parent_event[3] == 1
+
+
+def test_update_single_event_start_date_not_assigned():
+    test_values = {"status": 3}
+    response = app.test_client().put('/event/4', json={"values": test_values})
+    assert response.status_code == 200
+    return_event = response.json[0]
+    assert return_event[0] == 4
+    assert datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") != response.json[0][8]
+
+
+def test_update_single_event_start_date_assigned():
+    test_values = {"status": 2}
+    response = app.test_client().put('/event/3', json={"values": test_values})
+    assert response.status_code == 200
+    return_event = response.json[0]
+    assert return_event[0] == 3
+    assert datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") == response.json[0][8]
+
+
+def test_update_event_start_date_not_assigned():
+    test_values = {"status": 3}
+    test_filters = ["id = 4"]
+    response = app.test_client().put('/event/', json={"values": test_values, "filters": test_filters})
+    assert response.status_code == 200
+    return_event = response.json[0]
+    assert return_event[0] == 4
+    assert datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") != response.json[0][8]
+
+
+def test_update_event_start_date_assigned():
+    test_values = {"status": 2}
+    test_filters = ["id = 3"]
+    response = app.test_client().put('/event/', json={"values": test_values, "filters": test_filters})
+    assert response.status_code == 200
+    return_event = response.json[0]
+    assert return_event[0] == 3
+    assert datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") == response.json[0][8]

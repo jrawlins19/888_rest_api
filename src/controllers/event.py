@@ -1,5 +1,6 @@
 from flask import request
 from slugify import slugify
+from datetime import datetime, timezone
 from src.db import *
 from src.app import app
 from src.check_parent import check_parent_active
@@ -69,6 +70,12 @@ def update_event():
         if not body['filters'] or len(body['filters']) == 0:
             return "Missing updates object", 400
 
+        # if we're updating the status of the event, and it's to started, assign started to the current time
+        if body['values'].get('status'):
+            status = body['values'].get('status')
+            if status == 2:
+                body['values']['started_at'] = "'{0}'".format(datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"))
+
         # build the update query using the filters and values
         query = build_update_query('events', body['values'], body['filters'])
 
@@ -107,6 +114,12 @@ def update_events(event_id: int):
         # if missing values to update, fail
         if not body['values'] or len(body['values']) == 0:
             return "Missing updates object", 400
+
+        # if we're updating the status of the event, and it's to started, assign started to the current time
+        if body['values'].get('status'):
+            status = body['values'].get('status')
+            if status == 2:
+                body['values']['started_at'] = "'{0}'".format(datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"))
 
         # build the update query using the values and the event id from the url
         query = build_update_query('events', body['values'], ["id == {0}".format(event_id)])
